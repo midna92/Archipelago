@@ -1,5 +1,5 @@
 from worlds.LauncherComponents import Component, components, Type
-from .ap_player_manager import run
+from .gui.app import run
 
 components.append(Component("Player Manager",
                             func=run,
