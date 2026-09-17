@@ -1,7 +1,9 @@
 import tkinter as tk
+from pathlib import Path
 from tkinter import ttk
 
 from ..core.options_introspect import get_game_options
+from ..core.yaml_store import discover_player_yamls
 
 
 class Editor(ttk.Frame):
@@ -88,6 +90,14 @@ class Editor(ttk.Frame):
             actions,
             text="Save",
         ).pack(side=tk.RIGHT, padx=(0, 4))
+
+    def load_available_games(self, player_template_directory: Path) -> None:
+        if player_template_directory.exists():
+            games = discover_player_yamls(player_template_directory)
+            self.game_combo["values"] = [*games.keys()]
+
+    def select_game(self, game_name: str) -> None:
+        self.game_combo.current(self.game_combo["values"].index(game_name))
 
     def show_options(self, game_name: str):
         for widget in self.options_frame.winfo_children():

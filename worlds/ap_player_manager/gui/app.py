@@ -19,6 +19,7 @@ class ApPlayerManager(tk.Tk):
         self._create_statusbar()
 
         self.reload_yaml_tree()
+        self.reload_games()
 
     def _create_menu(self):
         menubar = tk.Menu(self)
@@ -74,11 +75,16 @@ class ApPlayerManager(tk.Tk):
 
     def _on_yaml_selected(self, game: str, player: str):
         self.status.config(text=f"Selected: {game} / {player}")
+        self.sidebar.load_presets(game, Path("Players") / "Templates" / "Presets")
+        self.editor.select_game(game)
         self.editor.show_options(game)
 
     def reload_yaml_tree(self):
         status_text = self.sidebar.load_yaml_tree(Path("Players"))
         self.status.config(text=status_text)
+
+    def reload_games(self):
+        self.editor.load_available_games(Path("Players") / "Templates")
 
 
 def run():

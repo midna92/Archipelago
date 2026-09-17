@@ -67,7 +67,7 @@ class Sidebar(ttk.Frame):
     def _create_presets(self):
         preset_frame = ttk.LabelFrame(
             self,
-            text="Presets for Player 1",
+            text="Presets",
             padding=6,
         )
         preset_frame.pack(fill=tk.X, pady=(8, 0))
@@ -77,9 +77,6 @@ class Sidebar(ttk.Frame):
             height=5,
         )
         self.preset_list.pack(fill=tk.X)
-
-        for preset in ("Casual", "Hard", "No Glitches"):
-            self.preset_list.insert(tk.END, preset)
 
         preset_buttons = ttk.Frame(preset_frame)
         preset_buttons.pack(fill=tk.X, pady=(6, 0))
@@ -136,3 +133,11 @@ class Sidebar(ttk.Frame):
                 )
 
         return f"{sum(len(files) for files in games.values())} YAML(s) found"
+
+    def load_presets(self, game_name: str, presets_directory: Path):
+        #self.preset_list.delete(tk.FIRST, tk.END)
+
+        games = discover_player_yamls(presets_directory)
+
+        for preset in games.get(game_name, []):
+            self.preset_list.insert(tk.END, preset.stem)
