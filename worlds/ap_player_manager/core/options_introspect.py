@@ -38,7 +38,7 @@ def get_game_options(game_name: str) -> Optional[GameOptions]:
         option_fields.append(OptionField(
             name=field.name,
             option_class=option_class,
-            default=field.default,
+            default=getattr(option_class, "default", None),
             option_class_mro=option_class.__mro__,
             display_name=getattr(option_class, "display_name", None),
         ))
