@@ -4,6 +4,7 @@ from tkinter import ttk
 
 from ..core.options_introspect import get_game_options
 from ..core.yaml_store import discover_player_yamls
+from .option_widgets import build_option_widget
 
 
 class Editor(ttk.Frame):
@@ -56,10 +57,39 @@ class Editor(ttk.Frame):
             expand=True,
         )
 
-        ttk.Label(
+        self._options_canvas = tk.Canvas(self.options_frame, highlightthickness=0)
+        self._options_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        options_scrollbar = ttk.Scrollbar(
             self.options_frame,
+            orient=tk.VERTICAL,
+            command=self._options_canvas.yview,
+        )
+        options_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self._options_canvas.configure(yscrollcommand=options_scrollbar.set)
+
+        self.options_list = ttk.Frame(self._options_canvas)
+        options_list_id = self._options_canvas.create_window(
+            (0, 0),
+            window=self.options_list,
+            anchor="nw",
+        )
+
+        self.options_list.bind(
+            "<Configure>",
+            lambda event: self._options_canvas.configure(
+                scrollregion=self._options_canvas.bbox("all"),
+            ),
+        )
+        self._options_canvas.bind(
+            "<Configure>",
+            lambda event: self._options_canvas.itemconfigure(options_list_id, width=event.width),
+        )
+
+        ttk.Label(
+            self.options_list,
             text="Show options of selected apworld dynamically",
-        ).pack(expand=True)
+        ).pack(expand=True, pady=20)
 
     def _create_actions(self):
         actions = ttk.Frame(self)
@@ -100,39 +130,42 @@ class Editor(ttk.Frame):
         self.game_combo.current(self.game_combo["values"].index(game_name))
 
     def show_options(self, game_name: str):
-        for widget in self.options_frame.winfo_children():
+        for widget in self.options_list.winfo_children():
             widget.destroy()
 
         game_options = get_game_options(game_name)
 
         if game_options is None:
             ttk.Label(
-                self.options_frame,
-                text=f"World nicht gefunden: {game_name}"
-            ).pack(anchor="w")
+                self.options_list,
+                text=f"World nicht gefunden: {game_name}",
+            ).pack(anchor="w", pady=10)
             return
 
-        text = tk.Text(
-            self.options_frame,
-            height=20,
-            width=80
-        )
-        text.pack(fill="both", expand=True)
-
-        text.insert("end", f"Game: {game_options.game_name}\n")
-        text.insert("end", f"Options: {game_options.options_dataclass_name}\n")
-        text.insert("end", "-" * 60 + "\n\n")
-
         for option_field in game_options.fields:
-            text.insert("end", f"Option: {option_field.name}\n")
-            text.insert("end", f"  Class: {option_field.option_class}\n")
-            text.insert("end", f"  Default: {option_field.default}\n")
-            text.insert("end", f"  MRO: {option_field.option_class_mro}\n")
+            self._add_option_row(option_field)
 
-            if option_field.display_name is not None:
-                text.insert(
-                    "end",
-                    f"  Display Name: {option_field.display_name}\n"
-                )
+    def _add_option_row(self, option_field) -> None:
+        row = ttk.Frame(self.options_list, padding=(0, 6))
+        row.pack(fill=tk.X)
 
-            text.insert("end", "\n")
+        ttk.Label(
+            row,
+            text=option_field.display_name or option_field.name,
+            font=("TkDefaultFont", 10, "bold"),
+        ).pack(anchor="w")
+
+        doc = (option_field.option_class.__doc__ or "").strip()
+        if doc:
+            ttk.Label(
+                row,
+                text=doc.splitlines()[0].strip(),
+                foreground="gray",
+                wraplength=520,
+            ).pack(anchor="w")
+
+        widget_area = ttk.Frame(row, padding=(0, 4, 0, 0))
+        widget_area.pack(fill=tk.X)
+        build_option_widget(widget_area, option_field.option_class, option_field.default)
+
+        ttk.Separator(row, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=(8, 0))
