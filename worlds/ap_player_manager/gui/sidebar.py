@@ -135,7 +135,8 @@ class Sidebar(ttk.Frame):
         return f"{sum(len(files) for files in games.values())} YAML(s) found"
 
     def load_presets(self, game_name: str, presets_directory: Path):
-        #self.preset_list.delete(tk.FIRST, tk.END)
+        if self.preset_list.size() > 0:
+            self.preset_list.delete(tk.FIRST, tk.END)
 
         games = discover_player_yamls(presets_directory)
 

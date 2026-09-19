@@ -1,5 +1,5 @@
 from dataclasses import dataclass, fields
-from typing import Any, List, Optional, get_type_hints
+from typing import Any, List, Optional
 
 from worlds.AutoWorld import AutoWorldRegister
 
@@ -28,7 +28,7 @@ def get_game_options(game_name: str) -> Optional[GameOptions]:
         return None
 
     options_dataclass = world.options_dataclass
-    type_hints = get_type_hints(options_dataclass)
+    type_hints = options_dataclass.type_hints
 
     option_fields = []
 
