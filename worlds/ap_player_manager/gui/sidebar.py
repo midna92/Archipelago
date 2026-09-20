@@ -136,7 +136,7 @@ class Sidebar(ttk.Frame):
 
     def load_presets(self, game_name: str, presets_directory: Path):
         if self.preset_list.size() > 0:
-            self.preset_list.delete(tk.FIRST, tk.END)
+            self.preset_list.delete(0, tk.END)
 
         games = discover_player_yamls(presets_directory)
 
